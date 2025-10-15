@@ -386,8 +386,8 @@ def get_readings(ship_id: str, tank_id: int, minutes: int = Query(60, ge=1, le=1
 # ========== MQTT INTEGRATION SECTION ============
 # ===================================================================
 
-MQTT_BROKER = "broker.hivemq.com"
-MQTT_PORT = 1883
+MQTT_BROKER = "d736eed424d94cb397ff3f5fa9615a2d.s1.eu.hivemq.cloud"
+MQTT_PORT = 8883
 TOPIC = "ship/+/sensors"
 
 # This is the helper function to get a database session inside the MQTT thread.
