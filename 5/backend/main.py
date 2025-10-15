@@ -10,6 +10,7 @@ import threading
 import paho.mqtt.client as mqtt
 import os, io, csv
 from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from sensor_simulator import publish_sensor_data
 
 # --- In-memory live cache for quick UI reads (survives process lifetime) ---
