@@ -591,15 +591,24 @@ mqtt_client = mqtt.Client()
 mqtt_client.on_connect = on_connect
 mqtt_client.on_message = on_message
 MQTT_ENABLED = os.getenv("MQTT_ENABLED", "false").lower() == "true"
+
+MQTT_BROKER = os.getenv("MQTT_BROKER", "d736eed424d94cb397ff3f5fa9615a2d.s1.eu.hivemq.cloud")
+MQTT_PORT = int(os.getenv("MQTT_PORT", 8883))
+MQTT_USERNAME = os.getenv("MQTT_USERNAME") # Set this in Render
+MQTT_PASSWORD = os.getenv("MQTT_PASSWORD") # Set this in Render
+TOPIC = "ship/+/sensors"
+
+# ... later in the start_mqtt_client function ...
 def start_mqtt_client():
     if MQTT_ENABLED:
+        # Add username, password, and TLS for secure connection
+        mqtt_client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+        mqtt_client.tls_set() # Important for port 8883
         mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
         mqtt_client.loop_start()
     else:
         print("⚠️ MQTT disabled on Render environment")
-
-    # mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
-    # mqtt_client.loop_forever()
+        
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=int(os.getenv("PORT", 10000)))
