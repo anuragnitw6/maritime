@@ -6,8 +6,10 @@ import json
 import random
 
 # --------- Config ---------
-MQTT_BROKER = "localhost"
-MQTT_PORT   = 1883
+MQTT_BROKER = "d736eed424d94cb397ff3f5fa9615a2d.s1.eu.hivemq.cloud"
+MQTT_PORT   = 8883
+MQTT_USERNAME = "anuragnitw6"
+MQTT_PASSWORD = "1234"
 
 SHIP_ID = "MTGREATMANTA"   # must match a real ship id in your DB
 TANK_ID = 1             # set to an existing tank's integer id for that ship
@@ -32,6 +34,8 @@ CO_DANGER_SPIKE = 110.0
 client = mqtt.Client()
 
 def connect_mqtt():
+    client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+    client.tls_set()  # enables TLS
     client.connect(MQTT_BROKER, MQTT_PORT, 60)
     client.loop_start()
 
