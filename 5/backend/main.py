@@ -10,7 +10,7 @@ import threading
 import paho.mqtt.client as mqtt
 import os, io, csv
 from fastapi.responses import StreamingResponse, JSONResponse
-
+from sensor_simulator import publish_sensor_data
 
 # --- In-memory live cache for quick UI reads (survives process lifetime) ---
 # LIVE_CACHE[(ship_id, tank_id)] = {
@@ -40,6 +40,12 @@ app.mount("/static", StaticFiles(directory="5", html=True), name="static")
 @app.get("/")
 def read_root():
     return FileResponse("5/index.html")
+    
+@app.on_event("startup")
+def startup_event():
+    # Start the simulation in the background
+    threading.Thread(target=publish_sensor_data, daemon=True).start()
+    
 # --- NEW: Global default thresholds (used if per-tank thresholds not set) ---
 DEFAULT_THRESHOLDS = {
     "warn_o2_low": 19.5,
