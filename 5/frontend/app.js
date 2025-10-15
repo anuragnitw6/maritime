@@ -258,7 +258,7 @@ function showToast(msg){
 }
 
 /* ========== API & Data Handling ========== */
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = 'https://maritime-w76k.onrender.com';
 let SHIPS_CACHE = [];
 let SENSORS_CACHE = [];
 let TANK_TYPES_CACHE = [];
