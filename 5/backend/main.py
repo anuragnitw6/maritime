@@ -97,6 +97,9 @@ def get_db():
     finally:
         db.close()
 
+@app.get("/")
+def home():
+    return {"status": "FastAPI app is running on Render!"}
 # --- One-time Data Seeding ---
 @app.on_event("startup")
 def seed_initial_data():
@@ -372,7 +375,7 @@ def get_readings(ship_id: str, tank_id: int, minutes: int = Query(60, ge=1, le=1
 # ========== MQTT INTEGRATION SECTION ============
 # ===================================================================
 
-MQTT_BROKER = "localhost"
+MQTT_BROKER = "broker.hivemq.com"
 MQTT_PORT = 1883
 TOPIC = "ship/+/sensors"
 
