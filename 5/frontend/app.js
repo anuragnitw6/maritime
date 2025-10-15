@@ -258,10 +258,28 @@ function showToast(msg){
 }
 
 /* ========== API & Data Handling ========== */
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = 'https://maritime-w76k.onrender.com'; // Use empty string for relative paths
 let SHIPS_CACHE = [];
 let SENSORS_CACHE = [];
 let TANK_TYPES_CACHE = [];
+
+// --- NEW ---
+let EXTERNAL_READINGS_CACHE = [];
+let liveReadingIndex = 0; // Index to cycle through the cached readings
+
+// --- NEW: This function fetches from the external API ---
+async function fetchAndCacheExternalReadings() {
+  try {
+    const response = await fetch('https://api.neuronwise.in/nw-ui/sensor_readings');
+    if (!response.ok) throw new Error('Failed to fetch external readings');
+    const data = await response.json();
+    // Sort by timestamp to ensure chronological order for simulation
+    EXTERNAL_READINGS_CACHE = data.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    console.log(`Cached and sorted ${EXTERNAL_READINGS_CACHE.length} external readings.`);
+  } catch (error) {
+    console.error("Error fetching external data:", error);
+  }
+}
 
 async function fetchMasterData() {
   try {
@@ -302,10 +320,10 @@ function startRealtimeUpdates() {
 /* ========== Page 1 (Overview) ========== */
 function initOverview(){
   renderOverviewPage([]);
-  
   setupOverviewEventListeners();
   startRealtimeUpdates();
 }
+
 // Stable pseudo-random from string (so dummy hours don't change every render)
 function seedFromString(str){
   let h = 2166136261 >>> 0; // FNV-1a base
@@ -315,6 +333,7 @@ function seedFromString(str){
   }
   return h >>> 0;
 }
+
 function seededInt(seed, min, max){
   // xorshift32
   let x = seed || 123456789;
@@ -414,127 +433,71 @@ function renderOverviewPage(ships){
     });
   }
   renderWorkSummaryTable(ships);
-
 }
 
 function setupOverviewEventListeners(){
 
   // ---------- Emergency Alarm wiring (raise + clear) ----------
-const emModal   = $('#emergencyModal');
-const emBtn     = $('#btnEmergency');
-const emMarq    = $('#emergencyMarquee');
-const emClear   = $('#btnClearEmergency');
-const emClrModal= $('#clearEmergencyModal');
+  const emModal   = $('#emergencyModal');
+  const emBtn     = $('#btnEmergency');
+  const emMarq    = $('#emergencyMarquee');
+  const emClear   = $('#btnClearEmergency');
+  const emClrModal= $('#clearEmergencyModal');
 
-function setEmergencyUI(active){
-  // Page flash + marquee
-  document.body.classList.toggle('emergency-active', !!active);
-  if (emMarq) emMarq.classList.toggle('hidden', !active);
+  function setEmergencyUI(active){
+    // Page flash + marquee
+    document.body.classList.toggle('emergency-active', !!active);
+    if (emMarq) emMarq.classList.toggle('hidden', !active);
 
-  // Buttons: when active, show "Clear"; when inactive, show "Raise"
-  if (emBtn) {
-    emBtn.textContent = active ? 'EMERGENCY ACTIVE' : 'RAISE EMERGENCY ALARM';
-    emBtn.classList.toggle('btn-danger', !active);
-    emBtn.classList.toggle('btn-confirm', !!active);
-    emBtn.disabled = active ? true : false; // lock raise while active
+    // Buttons: when active, show "Clear"; when inactive, show "Raise"
+    if (emBtn) {
+      emBtn.textContent = active ? 'EMERGENCY ACTIVE' : 'RAISE EMERGENCY ALARM';
+      emBtn.classList.toggle('btn-danger', !active);
+      emBtn.classList.toggle('btn-confirm', !!active);
+      emBtn.disabled = active ? true : false; // lock raise while active
+    }
+    if (emClear) emClear.classList.toggle('hidden', !active);
   }
-  if (emClear) emClear.classList.toggle('hidden', !active);
-}
 
-// OPEN raise modal
-if (emBtn && emModal){
-  emBtn.addEventListener('click', () => { emModal.classList.remove('hidden'); });
-  $('#cancelEm') && ($('#cancelEm').onclick = () => emModal.classList.add('hidden'));
-  $('#confirmEm') && ($('#confirmEm').onclick = async () => {
-    emModal.classList.add('hidden');
-    setEmergencyUI(true);
-    showToast('🚨 Emergency alarm raised');
-    pushLog('🚨 Emergency alarm raised at dockyard.');
+  // OPEN raise modal
+  if (emBtn && emModal){
+    emBtn.addEventListener('click', () => { emModal.classList.remove('hidden'); });
+    $('#cancelEm') && ($('#cancelEm').onclick = () => emModal.classList.add('hidden'));
+    $('#confirmEm') && ($('#confirmEm').onclick = async () => {
+      emModal.classList.add('hidden');
+      setEmergencyUI(true);
+      showToast('🚨 Emergency alarm raised');
+      pushLog('🚨 Emergency alarm raised at dockyard.');
 
-    try {
-      await fetch(`${API_BASE_URL}/api/logs`, {
-        method:'POST',
-        headers:{'Content-Type':'application/x-www-form-urlencoded'},
-        body:new URLSearchParams({event:'Emergency', details:'Dockyard emergency raised from UI'})
-      });
-    } catch {}
-  });
-}
+      try {
+        await fetch(`${API_BASE_URL}/api/logs`, {
+          method:'POST',
+          headers:{'Content-Type':'application/x-www-form-urlencoded'},
+          body:new URLSearchParams({event:'Emergency', details:'Dockyard emergency raised from UI'})
+        });
+      } catch {}
+    });
+  }
 
-// OPEN clear modal
-if (emClear && emClrModal){
-  emClear.addEventListener('click', () => emClrModal.classList.remove('hidden'));
-  $('#cancelClearEm') && ($('#cancelClearEm').onclick = () => emClrModal.classList.add('hidden'));
-  $('#confirmClearEm') && ($('#confirmClearEm').onclick = async () => {
-    emClrModal.classList.add('hidden');
-    setEmergencyUI(false);
-    showToast('✅ Emergency cleared');
-    pushLog('✅ Emergency cleared from UI.');
+  // OPEN clear modal
+  if (emClear && emClrModal){
+    emClear.addEventListener('click', () => emClrModal.classList.remove('hidden'));
+    $('#cancelClearEm') && ($('#cancelClearEm').onclick = () => emClrModal.classList.add('hidden'));
+    $('#confirmClearEm') && ($('#confirmClearEm').onclick = async () => {
+      emClrModal.classList.add('hidden');
+      setEmergencyUI(false);
+      showToast('✅ Emergency cleared');
+      pushLog('✅ Emergency cleared from UI.');
 
-    try {
-      await fetch(`${API_BASE_URL}/api/logs`, {
-        method:'POST',
-        headers:{'Content-Type':'application/x-www-form-urlencoded'},
-        body:new URLSearchParams({event:'EmergencyClear', details:'Dockyard emergency cleared from UI'})
-      });
-    } catch {}
-  });
-}
-
-
-//   // ---- Emergency Alarm wiring (index.html) ----
-// const emModal = $('#emergencyModal');
-// const emBtn   = $('#btnEmergency');
-// const emMarq  = $('#emergencyMarquee');
-
-// function setEmergencyUI(active){
-//   // flash the whole page + show/hide marquee
-//   document.body.classList.toggle('emergency-active', !!active);
-//   if (emMarq) emMarq.classList.toggle('hidden', !active);
-//   // optional: flip the button look/label so you can clear later if you want
-//   if (emBtn) {
-//     if (active) {
-//       emBtn.textContent = 'EMERGENCY ACTIVE';
-//       emBtn.classList.remove('btn-danger'); 
-//       emBtn.classList.add('btn-confirm');
-//       emBtn.disabled = true; // lock after trigger; remove if you prefer a toggle
-//     } else {
-//       emBtn.textContent = 'RAISE EMERGENCY ALARM';
-//       emBtn.classList.add('btn-danger'); 
-//       emBtn.classList.remove('btn-confirm');
-//       emBtn.disabled = false;
-//     }
-//   }
-// }
-
-// if (emBtn && emModal) {
-//   // open modal
-//   emBtn.addEventListener('click', () => {
-//     emModal.classList.remove('hidden');
-//   });
-
-//   // cancel
-//   $('#cancelEm') && ($('#cancelEm').onclick = () => {
-//     emModal.classList.add('hidden');
-//   });
-
-//   // confirm: raise alarm
-//   $('#confirmEm') && ($('#confirmEm').onclick = async () => {
-//     emModal.classList.add('hidden');
-//     setEmergencyUI(true);
-//     showToast('🚨 Emergency alarm raised');
-//     pushLog('🚨 Emergency alarm raised at dockyard.');
-
-//     // fire-and-forget log to backend (works with mock_api.js too)
-//     try {
-//       await fetch(`${API_BASE_URL}/api/logs`, {
-//         method:'POST',
-//         headers:{'Content-Type':'application/x-www-form-urlencoded'},
-//         body:new URLSearchParams({event:'Emergency', details:'Dockyard emergency raised from UI'})
-//       });
-//     } catch { /* ignore */ }
-//   });
-// }
+      try {
+        await fetch(`${API_BASE_URL}/api/logs`, {
+          method:'POST',
+          headers:{'Content-Type':'application/x-www-form-urlencoded'},
+          body:new URLSearchParams({event:'EmergencyClear', details:'Dockyard emergency cleared from UI'})
+        });
+      } catch {}
+    });
+  }
 
   const addModal = $('#addShipModal');
   document.addEventListener('click', e => {
@@ -666,7 +629,7 @@ if (emClear && emClrModal){
       }
     }
   });
-  }
+}
 
 function badgeFor(s){
   if(s==='Danger') return 'danger';
@@ -741,7 +704,7 @@ function setKPIState(id, value, warn, danger, isLow=false) {
 
 /* Write KPI numbers and apply CURRENT_THRESHOLDS (or defaults) */
 function renderShipKPIsWithThresholds(ship) {
-  const fmt = v => (v === null || v === undefined) ? '—' : v;
+  const fmt = v => (v === null || v === undefined) ? '—' : parseFloat(v).toFixed(1);
   $('#kpiO2')  && ($('#kpiO2').textContent  = fmt(ship.live_o2));
   $('#kpiCO')  && ($('#kpiCO').textContent  = fmt(ship.live_co));
   $('#kpiLEL') && ($('#kpiLEL').textContent = fmt(ship.live_lel));
@@ -760,7 +723,6 @@ function renderShipKPIsWithThresholds(ship) {
 }
 
 /* Render live sensor tiles for the selected tank */
-// 
 function renderTankSensorsLiveMapToTiles(sensorsMap) {
   const entries = Object.entries(sensorsMap || {}); // [[id,{O2,CO,LEL,H2S}], ...]
   if (entries.length === 0) {
@@ -842,18 +804,7 @@ async function onTankSelected(shipId, tankId) {
     warn_h2s_high:10,  danger_h2s_high:15,
   });
 
-  try {
-    const live = await fetchTankLive(shipId, tankId);
-    renderTankSensorsLive(live.sensors);
-    // Use DISPLAY aggregate for KPIs (overview)
-    currentShip.live_o2  = live.aggregates?.display?.O2  ?? currentShip.live_o2;
-    currentShip.live_co  = live.aggregates?.display?.CO  ?? currentShip.live_co;
-    currentShip.live_lel = live.aggregates?.display?.LEL ?? currentShip.live_lel;
-    currentShip.live_h2s = live.aggregates?.display?.H2S ?? currentShip.live_h2s;
-  } catch (e) {
-    console.warn('Live tank fetch failed', e);
-  }
-
+  // This will be handled by the live data simulation poll
   renderShipKPIsWithThresholds(currentShip);
 }
 
@@ -887,37 +838,53 @@ async function initShipPage() {
     $('#tankTitle').textContent = "No tanks configured for this ship.";
     $('#sensorsWrap').innerHTML = '<p>Please add a tank to begin assigning sensors.</p>';
   }
+
   // ✅ Fetch permits and render the table
-const permitsRaw = await fetchPermitsForShip(currentShip.id);
-renderPermitSummary(normalizePermits(permitsRaw));
-// poll every 2s for fresh values + live sensors
+  const permitsRaw = await fetchPermitsForShip(currentShip.id);
+  renderPermitSummary(normalizePermits(permitsRaw));
+
+  // --- MERGED CHANGE: SIMULATED DATA POLL ---
   window.__shipPoll && clearInterval(window.__shipPoll);
   window.__shipPoll = setInterval(async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/ships`);
-      const ships = await res.json();
-      const updated = ships.find(s => s.id === currentShip.id);
-      if (updated) {
-        currentShip = updated;
-        // refresh live sensors for current tank and sync KPIs to DISPLAY aggregate
-        if (currentTankId != null) {
-          try {
-            const live = await fetchTankLive(currentShip.id, currentTankId);
-            renderTankSensorsLive(live.sensors);
-            currentShip.live_o2  = live.aggregates?.display?.O2  ?? currentShip.live_o2;
-            currentShip.live_co  = live.aggregates?.display?.CO  ?? currentShip.live_co;
-            currentShip.live_lel = live.aggregates?.display?.LEL ?? currentShip.live_lel;
-            currentShip.live_h2s = live.aggregates?.display?.H2S ?? currentShip.live_h2s;
-          } catch(e) { /* keep last visuals if live fails */ }
-        }
-        renderShipKPIsWithThresholds(currentShip);
-        // refresh sparks occasionally
-        if (currentTankId != null) { updateSparks(currentShip.id, currentTankId); }
-      }
-    } catch (e) {
-      console.warn('Ship poll failed', e);
+    // Ensure the cache has data
+    if (EXTERNAL_READINGS_CACHE.length === 0) {
+      return; // Wait for data to be fetched
     }
-  }, 2000);
+
+    try {
+      // Get the next reading from the cache
+      const rawReading = EXTERNAL_READINGS_CACHE[liveReadingIndex];
+
+      // Map the raw sensor data to our application's format
+      const mappedValues = {
+          H2S: rawReading.sensor1,
+          CO:  rawReading.sensor2,
+          O2:  rawReading.sensor3,
+          LEL: rawReading.sensor4,
+      };
+
+      // Create a "live" data structure to feed into your render functions
+      const live = {
+        sensors: { 'Simulated-Sensor': mappedValues },
+        aggregates: { display: mappedValues } // Use the same values for the main KPIs
+      };
+
+      // Update the UI with the simulated data
+      renderTankSensorsLive(live.sensors);
+      currentShip.live_o2  = live.aggregates?.display?.O2;
+      currentShip.live_co  = live.aggregates?.display?.CO;
+      currentShip.live_lel = live.aggregates?.display?.LEL;
+      currentShip.live_h2s = live.aggregates?.display?.H2S;
+
+      renderShipKPIsWithThresholds(currentShip);
+
+      // Increment and wrap the index to loop through the cached data
+      liveReadingIndex = (liveReadingIndex + 1) % EXTERNAL_READINGS_CACHE.length;
+
+    } catch (e) {
+      console.warn('Error in ship page polling loop:', e);
+    }
+  }, 2000); // The interval remains 2 seconds
 
   window.addEventListener('beforeunload', () => {
     window.__shipPoll && clearInterval(window.__shipPoll);
@@ -1009,27 +976,27 @@ function renderSensorsForTank(tank) {
 
 function setupShipPageEventListeners(shipCtx) {
   // remove/unassign a sensor from this tank (UI-first; best-effort API)
-$('#sensorsWrap') && $('#sensorsWrap').addEventListener('click', async (e) => {
-  const btn = e.target.closest('.sensor-remove');
-  if (!btn) return;
-  const tile = btn.closest('.sensor');
-  const sensorId = tile?.dataset?.sensorId;
-  if (!sensorId) return;
+  $('#sensorsWrap') && $('#sensorsWrap').addEventListener('click', async (e) => {
+    const btn = e.target.closest('.sensor-remove');
+    if (!btn) return;
+    const tile = btn.closest('.sensor');
+    const sensorId = tile?.dataset?.sensorId;
+    if (!sensorId) return;
 
-  if (!confirm(`Unassign sensor ${sensorId} from this tank?`)) return;
+    if (!confirm(`Unassign sensor ${sensorId} from this tank?`)) return;
 
-  // Best-effort API (adjust if your backend uses a different route)
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/ships/${shipCtx.id}/tanks/${currentTankId}/sensors/${encodeURIComponent(sensorId)}`, {
-      method: 'DELETE'
-    });
-    // If API not implemented, still proceed with UI removal
-  } catch {}
+    // Best-effort API (adjust if your backend uses a different route)
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ships/${shipCtx.id}/tanks/${currentTankId}/sensors/${encodeURIComponent(sensorId)}`, {
+        method: 'DELETE'
+      });
+      // If API not implemented, still proceed with UI removal
+    } catch {}
 
-  // Remove from UI immediately
-  tile.remove();
-  showToast(`Sensor ${sensorId} removed`);
-});
+    // Remove from UI immediately
+    tile.remove();
+    showToast(`Sensor ${sensorId} removed`);
+  });
 
   const addTankModal = $('#addTankModal');
   $('#addTankBtn') && ($('#addTankBtn').onclick = () => {
@@ -1267,6 +1234,7 @@ function showDockYardShipsWIP() {
   });
   modal.style.display = "block";
 }
+
 function renderPermitSummary(perms){
   const tb = document.getElementById('permitSummaryBody');
   if (!tb) return;
@@ -1291,8 +1259,8 @@ function renderPermitSummary(perms){
         <td><span class="permit-status ${statusClass}">${p.status ?? '—'}</span></td>
       </tr>`;
   }).join('');
-  
 }
+
 // Try multiple endpoints and shapes, then normalize rows for the table.
 async function fetchPermitsForShip(shipId){
   const tryUrls = [
@@ -1327,9 +1295,6 @@ function normalizePermits(rawPermits){
     status:    p.status ?? p.state ?? p.phase ?? '—'
   }));
 }
-
-// wherever you load permits:
-
 
 function showWorkingPersonnel() {
   const modal = document.getElementById("dockyardModal");
@@ -1387,22 +1352,7 @@ async function fetchTankSeries(shipId, tankId, minutes=60){
   const res = await fetch(url);
   return await res.json();
 }
-function drawSpark(containerId, series, key, minY, maxY){
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  const w = el.clientWidth || 120, h = el.clientHeight || 26, p=2;
-  const xs = series.map((_,i)=> i/(Math.max(series.length-1,1)));
-  const ys = series.map(r=>{
-    const v = r[key]; 
-    if (v==null) return null;
-    const y = (v - minY) / (maxY - minY || 1);
-    return 1 - Math.max(0, Math.min(1, y));
-  });
-  const pts = xs.map((x,i)=> ys[i]==null? null : `${p + x*(w-2*p)},${p + ys[i]*(h-2*p)}`).filter(Boolean);
-  el.innerHTML = `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
-    <polyline points="${pts.join(' ')}" fill="none" stroke="currentColor" stroke-width="2" opacity="0.9"/>
-  </svg>`;
-}
+
 function drawSpark(containerId, series, key, minY, maxY){
   const el = document.getElementById(containerId);
   if (!el) return;
@@ -1410,7 +1360,7 @@ function drawSpark(containerId, series, key, minY, maxY){
   const w = el.clientWidth || 160, h = el.clientHeight || 46, p = 2;
   const xs = series.map((_,i)=> i/(Math.max(series.length-1,1)));
   const ys = series.map(r=>{
-    const v = r[key]; 
+    const v = r[key];
     if (v==null) return null;
     const y = (v - minY) / (maxY - minY || 1);
     return 1 - Math.max(0, Math.min(1, y));
@@ -1497,6 +1447,9 @@ async function initTimelinePage(){
 
 /* ========== Bootstrap by page + Keyboard Shortcuts ========== */
 document.addEventListener('DOMContentLoaded', () => {
+  // --- NEW: Fetch external data on application start ---
+  fetchAndCacheExternalReadings();
+
   if (document.getElementById('shipsList')) {
     // overview
     initClock('nowTime');
