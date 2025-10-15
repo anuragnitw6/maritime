@@ -579,7 +579,16 @@ def on_message(client, userdata, msg):
 mqtt_client = mqtt.Client()
 mqtt_client.on_connect = on_connect
 mqtt_client.on_message = on_message
-
+MQTT_ENABLED = os.getenv("MQTT_ENABLED", "false").lower() == "true"
 def start_mqtt_client():
-    mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
-    mqtt_client.loop_forever()
+    if MQTT_ENABLED:
+        mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
+        mqtt_client.loop_start()
+    else:
+        print("⚠️ MQTT disabled on Render environment")
+
+    # mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
+    # mqtt_client.loop_forever()
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=int(os.getenv("PORT", 10000)))
