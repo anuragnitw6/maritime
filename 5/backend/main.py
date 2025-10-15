@@ -35,7 +35,7 @@ app.add_middleware(
     allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"],
 )
 
-frontend_path = os.path.join(os.path.dirname(__file__), "../5/frontend")
+frontend_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
 app.mount("/static", StaticFiles(directory=frontend_path, html=True), name="static")
 # Serve index.html on root
 @app.get("/")
