@@ -11,7 +11,7 @@ import paho.mqtt.client as mqtt
 import os, io, csv
 from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from sensor_simulator import publish_sensor_data
+from sensor_simulator import publish_sensor_data,connect_mqtt
 
 # --- In-memory live cache for quick UI reads (survives process lifetime) ---
 # LIVE_CACHE[(ship_id, tank_id)] = {
@@ -44,7 +44,13 @@ def read_root():
     
 @app.on_event("startup")
 def startup_event():
-    # Start the simulation in the background
+    # Connect to MQTT broker (if accessible)
+    try:
+        connect_mqtt()
+    except Exception as e:
+        print(f"MQTT not available: {e}")
+
+    # Start simulator thread
     threading.Thread(target=publish_sensor_data, daemon=True).start()
     
 # --- NEW: Global default thresholds (used if per-tank thresholds not set) ---
