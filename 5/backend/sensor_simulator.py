@@ -4,12 +4,13 @@ import paho.mqtt.client as mqtt
 import time
 import json
 import random
-
+import os
 # --------- Config ---------
-MQTT_BROKER = "d736eed424d94cb397ff3f5fa9615a2d.s1.eu.hivemq.cloud"
-MQTT_PORT   = 8883
-MQTT_USERNAME = "anuragnitw6"
-MQTT_PASSWORD = "1234"
+
+MQTT_BROKER = os.environ.get("MQTT_BROKER")
+MQTT_PORT = int(os.environ.get("MQTT_PORT"))
+MQTT_USERNAME = os.environ.get("MQTT_USERNAME")
+MQTT_PASSWORD = os.environ.get("MQTT_PASSWORD")
 
 SHIP_ID = "MTGREATMANTA"   # must match a real ship id in your DB
 TANK_ID = 1             # set to an existing tank's integer id for that ship
