@@ -865,7 +865,7 @@ async function initShipPage() {
 
       // Create a "live" data structure to feed into your render functions
       const live = {
-        sensors: { 'Simulated-Sensor': mappedValues },
+        sensors: { 'SN-G-001': mappedValues },
         aggregates: { display: mappedValues } // Use the same values for the main KPIs
       };
 
