@@ -34,6 +34,12 @@ app.add_middleware(
     allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"],
 )
 
+app.mount("/static", StaticFiles(directory="5", html=True), name="static")
+
+# Serve index.html on root
+@app.get("/")
+def read_root():
+    return FileResponse("5/index.html")
 # --- NEW: Global default thresholds (used if per-tank thresholds not set) ---
 DEFAULT_THRESHOLDS = {
     "warn_o2_low": 19.5,
@@ -97,9 +103,6 @@ def get_db():
     finally:
         db.close()
 
-@app.get("/")
-def home():
-    return {"status": "FastAPI app is running on Render!"}
 # --- One-time Data Seeding ---
 @app.on_event("startup")
 def seed_initial_data():
