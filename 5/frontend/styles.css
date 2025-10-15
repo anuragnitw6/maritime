@@ -1,0 +1,380 @@
+/* ========== LIGHT THEME PALETTE (business + tech) ========== */
+:root{
+  /* Surfaces */
+  --bg: #f6f8fb;           /* page background */
+  --panel: #ffffff;        /* cards / tiles */
+  --panel-2: #f2f5fa;      /* table headers / secondary blocks */
+
+  /* Text */
+  --text: #1f2937;         /* primary text */
+  --muted: #5b6b7a;        /* secondary text */
+
+  /* Brand & states */
+  --blue: #2563eb;         /* brand */
+  --ok:   #16a34a;
+  --warn: #f59e0b;
+  --danger:#ef4444;
+
+  /* Borders & effects */
+  --border: #e5eaf1;
+  --shadow-1: 0 2px 10px rgba(2, 6, 23, .06);
+  --shadow-2: 0 8px 24px rgba(2, 6, 23, .08);
+  --radius: 16px;          /* global rounding */
+  --radius-lg: 20px;       /* hero rounding */
+}
+
+/* ========== GLOBAL ========== */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background: radial-gradient(1200px 800px at 10% -10%, #ffffff 0%, var(--bg) 55%) fixed;
+  font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+  color:var(--text);
+}
+
+/* emergency flash stays subtle on light */
+@keyframes flashRed {
+  0%, 100% { box-shadow: inset 0 0 0 0 rgba(239,68,68,.12); }
+  50%      { box-shadow: inset 0 0 0 9999px rgba(239,68,68,.10); }
+}
+body.emergency-active { animation: flashRed 0.9s infinite; }
+
+/* ========== TOP BAR ========== */
+.topbar{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 18px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top:0; z-index:100;
+}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-title{font-weight:700;letter-spacing:.2px;color:var(--text)}
+.brand-emoji{font-size:20px;opacity:.9}
+.brand-divider{opacity:.35;margin:0 4px}
+.userbox{display:flex;align-items:center;gap:16px;color:var(--muted)}
+
+/* ========== LAYOUT & PANELS ========== */
+.layout{display:grid;grid-template-columns:280px 1fr;gap:16px;padding:16px}
+.leftcol,.maincol{display:flex;flex-direction:column;gap:16px}
+
+.statcard,
+.ship-status,
+.shipcard,
+.logcard,
+.modal-card,
+.table-container,
+.sensor,
+.kpi {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-1);
+}
+
+.statcard{padding:16px}
+.statcard.warn{border-color: rgba(245,158,11,.35)}
+.statcard.danger{border-color: rgba(239,68,68,.35)}
+.stat-title{color:var(--muted);font-size:12px;letter-spacing:.3px}
+.stat-value{font-size:28px;font-weight:700;margin-top:6px;color:var(--text)}
+
+.section-title{font-size:18px;font-weight:800;letter-spacing:.3px;margin:2px 0;color:var(--text)}
+.section-title.small{font-size:14px;font-weight:700;color:var(--muted)}
+
+/* ========== BUTTONS & LINKS ========== */
+.btn,.btn-danger,.btn-warn,.btn-confirm{
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:10px 14px;font-weight:700;
+  cursor:pointer;transition:.18s ease;
+  background:#f8fafc;color:#0f172a;
+  box-shadow: 0 1px 2px rgba(2,6,23,.04);
+}
+.btn:hover{transform:translateY(-1px); box-shadow: var(--shadow-1)}
+.btn:active{transform:translateY(0)}
+.btn-danger{background:#fee2e2;color:#991b1b;border-color:#fecaca}
+.btn-warn{background:#fff7ed;color:#9a3412;border-color:#fed7aa}
+.btn-confirm{background:#ecfdf5;color:#065f46;border-color:#bbf7d0}
+.link{color:var(--blue);text-decoration:none}
+.link:hover{text-decoration:underline}
+.btn-delete{
+  background:#fff;border:1px solid var(--border);color:#9aa6b2;font-weight:700;cursor:pointer;
+  padding:6px 10px;border-radius:10px;
+}
+.btn-delete:hover{background:#f3f6fb;color:#ef4444;border-color:#fecaca}
+
+/* ========== SHIP CARDS GRID ========== */
+.ships-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.ship-status{padding:18px;text-align:center}
+.ship-icon{font-size:40px;width:56px;height:56px;display:flex;align-items:center;justify-content:center;margin:0 auto}
+.ship-icon img{width:100%;height:100%;object-fit:cover;border-radius:12px}
+.ship-status-name{font-size:12px;font-weight:700;margin:6px 0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
+.badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px}
+.badge.gray{background:#eef2f7;color:#475569}
+.badge.ok{background:#ecfdf5;color:#059669}
+.badge.warn{background:#fff7ed;color:#b45309}
+.badge.danger{background:#fee2e2;color:#dc2626}
+
+.shipcards-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.shipcard{padding:14px;gap:10px;position:relative}
+.shipcard .btn-delete{position:absolute;top:8px;right:8px;}
+.shipmeta{font-size:12px;color:var(--muted);line-height:1.35}
+.shipname{font-weight:800;color:var(--text)}
+.enter{align-self:flex-end}
+
+/* ========== MODALS ========== */
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.25);display:flex;align-items:center;justify-content:center;z-index:100;}
+.hidden{display:none}
+.modal-card{padding:20px;max-width:520px}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.modal-form{display:flex;flex-direction:column;gap:8px;}
+.modal-form label{font-size:12px;color:var(--muted);margin-top:4px;}
+.modal-form input, .input, textarea{
+  background:#ffffff;border:1px solid var(--border);color:var(--text);
+  padding:10px;border-radius:10px;
+}
+.modal-form input:focus, .input:focus, textarea:focus{
+  outline: none; border-color: #c7d2fe; box-shadow: 0 0 0 4px rgba(37,99,235,.12);
+}
+
+/* ========== SHIP PAGE LEFT NAV ========== */
+.tanknav{display:flex;flex-direction:column;gap:10px}
+.tankbtn{
+  display:flex; justify-content:space-between; align-items:center;
+  background:#ffffff;border:1px solid var(--border);color:var(--text);
+  border-radius:12px;padding:10px;cursor:pointer;text-align:left;width:100%;
+}
+.tankbtn:hover{border-color:#cbd5e1; box-shadow: var(--shadow-1)}
+.tankbtn.active{border-color:#bfdbfe; background:#eff6ff}
+
+/* ========== LOGS CARD ========== */
+.logcard{padding:12px;margin-top:12px}
+.plain{list-style:none;margin:8px 0 0;padding:0}
+.logs{
+  height:160px;overflow:auto;background:#fbfdff;border:1px solid var(--border);
+  border-radius:10px;padding:8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:#0f172a;
+}
+
+/* ========== KPI TILES ========== */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{padding:14px}
+.kpi-name{font-weight:700;color:var(--muted)}
+.kpi-value{font-size:34px;font-weight:800;margin:6px 0;color:#0f172a}
+.kpi.ok  .kpi-value{color:var(--ok)}
+.kpi.warn .kpi-value{color:var(--warn)}
+.kpi.danger .kpi-value{color:var(--danger)}
+.spark{
+  height:26px;background:linear-gradient(180deg,#ffffff,#f6f8fb);
+  border-radius:8px;border:1px dashed #dbe3ee;opacity:.9
+}
+
+/* thresholds inline chips */
+.kpi-thresholds{ margin-top:.5rem; font-size:12px; opacity:.9; color: var(--muted); }
+.kpi-thresholds code{ padding:0 .25rem; background:#f3f6fb; border-radius:6px; }
+
+/* ========== SENSORS GRID ========== */
+.sensors-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.sensor{padding:12px}
+.sensor-top{display:flex;justify-content:space-between;align-items:center;}
+.sensor-id{font-weight:700}
+.sensor-state.ok{color:var(--ok)} .sensor-state.warn{color:var(--warn)} .sensor-state.danger{color:var(--danger)}
+.sensor-val{font-size:22px;font-weight:800;margin-top:6px;color:#0f172a}
+.sensor-details{display:flex; gap:12px; font-size:11px; color: var(--muted); margin-top:6px}
+
+/* ========== TABLES / INVENTORY / TIMELINE ========== */
+.inventory-layout{padding:16px}
+.table-container{overflow:hidden}
+.data-table{width:100%;border-collapse:separate;border-spacing:0}
+.data-table th, .data-table td {
+  padding:12px 16px;text-align:left;border-bottom:1px solid var(--border); color: var(--text);
+}
+.data-table th{
+  background:var(--panel-2);
+  font-size:12px;color:#334155;
+}
+.data-table tbody tr{cursor:pointer;transition: background-color .15s}
+.data-table tbody tr:hover{background:#f1f5ff}
+
+/* wider modal when needed */
+.modal-card.wide{max-width:800px}
+
+/* info blocks */
+.sensor-info-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:12px;margin-bottom:20px;background:var(--panel-2);
+  padding:12px;border-radius:12px; border:1px solid var(--border)
+}
+
+/* ========== TOASTS ========== */
+#toastBox{ position: fixed; right: 16px; bottom: 16px; display:flex; flex-direction:column; gap:8px; z-index:1000; }
+.toast{
+  background:#ffffff; border:1px solid var(--border); color:#0f172a;
+  padding:10px 12px; border-radius:12px; transform: translateY(10px); opacity:0;
+  transition:.25s ease; box-shadow: var(--shadow-2);
+}
+.toast.show{ transform: translateY(0); opacity:1; }
+
+/* ========== FILTER ROW & INPUTS ========== */
+.filters-row{
+  display:grid; grid-template-columns: repeat(6, minmax(0, 170px)); gap:10px; margin-bottom:12px;
+}
+.input{ background:#ffffff; border:1px solid var(--border); color:var(--text); padding:10px; border-radius:10px; }
+.input::placeholder{ color:#9aa6b2; }
+@media (max-width: 900px){ .filters-row{ grid-template-columns: 1fr 1fr; } }
+
+/* ========== STATUS BUTTON GROUP (ships list) ========== */
+.ship-actions{ display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-top:12px; }
+.status-button-group{ display:flex; gap:6px; margin-right:auto; }
+.btn-status{
+  background:#ffffff; border:1px solid var(--border); color:#0f172a;
+  padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:700; font-size:12px; transition: .15s;
+}
+.btn-status:hover{ background:#f3f6fb; }
+.btn-status.active{ background:#ecfdf5; border-color:#bbf7d0; color:#065f46; }
+.btn-status:disabled{ background:#f8fafc; border-color:#e5eaf1; color:#94a3b8; cursor:not-allowed; }
+
+/* ========== ACKNOWLEDGED BOX LOOK (positive) ========== */
+.statcard.danger.acknowledged{
+  border-color: #86efac; background: #f0fdf4;
+}
+.statcard.danger.acknowledged .stat-value{ color: var(--ok); }
+
+/* ===== THEME: DARK (toggle via body.theme-dark) ===== */
+body.theme-dark{
+  --bg:#0b1520;
+  --panel:#111b27;
+  --panel-2:#0f1a25;
+  --text:#d9e2ec;
+  --muted:#9fb3c8;
+  --ok:#36c98e;
+  --warn:#ffb020;
+  --danger:#ff4d4f;
+  --blue:#2f81f7;
+  --border:#122235;
+  --shadow-1: 0 2px 10px rgba(0,0,0,.35);
+  --shadow-2: 0 10px 28px rgba(0,0,0,.45);
+  --radius:16px;
+  --radius-lg:20px;
+}
+
+/* Dark: adjust page bg & components subtly */
+body.theme-dark{
+  background: linear-gradient(180deg,#38393a,#09111a) fixed;
+}
+body.theme-dark .topbar{
+  background:#0e1926;
+  border-bottom:1px solid var(--border);
+}
+body.theme-dark .logs{
+  background:#0c1723;
+  color:#d9e2ec;
+  border-color:var(--border);
+}
+body.theme-dark .btn{ background:#2c4964; color:#fff; border-color:#17314a; }
+body.theme-dark .btn:hover{ box-shadow:none; }
+body.theme-dark .btn-danger{ background:var(--danger); color:#fff; border-color:transparent; }
+body.theme-dark .btn-warn{ background:var(--warn); color:#1b1b1b; border-color:transparent; }
+body.theme-dark .btn-confirm{ background:var(--ok); color:#fff; border-color:transparent; }
+body.theme-dark .input,
+body.theme-dark .modal-form input,
+body.theme-dark textarea{
+  background:#0c1723; border:1px solid #17314a; color:#fff;
+}
+body.theme-dark .data-table tbody tr:hover{ background:#19324a; }
+
+
+/* ---------- SIDEBAR LAYOUT ---------- */
+.app {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100dvh;
+  background: var(--bg);
+}
+
+/* Left sidebar */
+.sidebar {
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  padding: 16px 12px;
+  position: sticky; top: 0; height: 100dvh;
+  box-shadow: var(--shadow-1);
+}
+.sidebar .brand {
+  gap: 8px; margin-bottom: 12px;
+}
+.sidebar .brand-title { font-size: 16px; }
+.sidebar .nav {
+  display: flex; flex-direction: column; gap: 6px; margin-top: 8px;
+}
+.sidebar .nav a, .sidebar .nav button {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 10px 12px; border-radius: 12px; cursor: pointer;
+}
+.sidebar .nav a:hover, .sidebar .nav button:hover {
+  background: var(--panel-2);
+  box-shadow: var(--shadow-1);
+}
+.sidebar .nav .active {
+  border-color: #bfdbfe; background: #eff6ff;
+}
+
+/* main content wrapper (your current pages go inside this) */
+.main {
+  min-width: 0; /* fix overflow with grids */
+}
+
+/* Make existing topbar optional (keep it if you like) */
+.topbar {
+  border-radius: 0;
+}
+
+/* ---------- “ADD SHIP” DASHED TILE (light + dark aware) ---------- */
+.ship-status-add {
+  background: transparent;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: .2s all; min-height: 120px;
+}
+.ship-status-add:hover {
+  border-color: var(--blue);
+  background: color-mix(in srgb, var(--blue) 8%, transparent);
+}
+.add-icon { font-size: 48px; color: #94a3b8; font-weight: 300; }
+.ship-status-add:hover .add-icon { color: var(--blue); }
+
+/* ---------- THEME: ensure components use CSS vars (dark toggle safe) ---------- */
+/* Buttons that had hard whites—align them to vars so theme flips work */
+.btn, .btn-danger, .btn-warn, .btn-confirm {
+  background: var(--panel-2);
+  color: var(--text);
+  border-color: var(--border);
+}
+.btn-danger { background: color-mix(in srgb, var(--danger) 12%, var(--panel)); color: #7f1d1d; }
+.btn-warn   { background: color-mix(in srgb, var(--warn) 10%, var(--panel));   color: #7c2d12; }
+.btn-confirm{ background: color-mix(in srgb, var(--ok)  10%, var(--panel));   color: #064e3b; }
+
+/* Inputs */
+.input, .modal-form input, textarea {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+/* Tables hover (use panel-2 so dark mode respects) */
+.data-table tbody tr:hover { background: var(--panel-2); }
+
+/* Toasts */
+.toast { background: var(--panel); color: var(--text); border-color: var(--border); }
+
+/* Logs area */
+.logs { background: var(--panel-2); color: var(--text); border-color: var(--border); }
+
+/* KPI sparkline background */
+.spark { background: linear-gradient(180deg, var(--panel), var(--panel-2)); border-color: var(--border); }
+
+.hidden { display: none !important; }
+.btn.small { padding: 6px 10px; font-size: 12px; }
