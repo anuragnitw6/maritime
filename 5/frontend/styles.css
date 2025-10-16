@@ -621,3 +621,36 @@ body.theme-dark .bat-fill {
 body.theme-dark .sig-bar {
     background-color: var(--blue); /* signal bars */
 }
+/* Dark theme tank buttons */
+body.theme-dark #tankNav .tankbtn {
+    background-color: var(--panel);    /* dark panel */
+    color: var(--text);                 /* light text */
+    border: 1px solid var(--border);    /* subtle border */
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    margin: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+}
+
+/* Hover effect */
+body.theme-dark #tankNav .tankbtn:hover {
+    background-color: var(--panel-2);
+    box-shadow: var(--shadow-2);
+}
+
+/* Delete button styling */
+body.theme-dark #tankNav .tankbtn .btn-delete {
+    background-color: transparent;
+    color: var(--danger);
+    border: none;
+    cursor: pointer;
+    font-size: 0.8em;
+}
+
+body.theme-dark #tankNav .tankbtn .btn-delete:hover {
+    color: #ff7878;
+}
