@@ -592,3 +592,32 @@ body.theme-dark .data-table tbody tr:hover{ background:#19324a; }
 
 .summary-note{ font-size: 12px; margin-top: 8px; }
 
+body.theme-dark .sensor {
+    background-color: var(--panel);   /* matches dark panel color */
+    color: var(--text);                /* light text */
+    border: 1px solid var(--border);   /* subtle border */
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-1);
+}
+body.theme-dark .sensor-top {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4px;
+    margin-bottom: 4px;
+    color: var(--text);
+}
+body.theme-dark .sensor-val {
+    color: var(--text);
+    margin: 2px 0;
+}
+body.theme-dark .sensor-meta {
+    color: var(--muted);
+    font-size: 0.9em;
+}
+
+body.theme-dark .bat-fill {
+    background-color: var(--ok); /* battery green fill */
+}
+
+body.theme-dark .sig-bar {
+    background-color: var(--blue); /* signal bars */
+}
