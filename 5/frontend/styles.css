@@ -654,22 +654,22 @@ body.theme-dark #tankNav .tankbtn .btn-delete {
 body.theme-dark #tankNav .tankbtn .btn-delete:hover {
     color: #ff7878;
 }
-.dark-theme .nav {
+.theme-dark .nav {
   background-color: #1e1e1e;
   border-bottom: 1px solid #333;
 }
 
-.dark-theme .nav a {
+.theme-dark .nav a {
   color: #e0e0e0;
 }
 
-.dark-theme .nav a:hover,
-.dark-theme .nav a.active {
+.theme-dark .nav a:hover,
+.theme-dark .nav a.active {
   background-color: #007bff;
   color: white;
 }
 
-.dark-theme #themeToggle {
+.theme-dark #themeToggle {
   color: #e0e0e0;
   border-color: #444;
 }
